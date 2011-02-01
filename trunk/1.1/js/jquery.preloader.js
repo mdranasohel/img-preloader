@@ -6,9 +6,12 @@
 */
 $.fn.preloader = function(options) {
 	var defaults = {
-		onDone : function() {},
-		onEachLoad : function(img) {},
-		onLoadError : function(img) {},
+		onDone : function() {
+		},
+		onEachLoad : function(img) {
+		},
+		onLoadError : function(img) {
+		},
 		fadeIn : 500,
 		delay : 100,
 		interval : 200,
@@ -21,8 +24,8 @@ $.fn.preloader = function(options) {
 		background : 'url(' + options.loader + ') 50% 50% no-repeat',
 		display : 'inline-block'
 	},
-	delayTime = 0,
-	noError = 1;
+	delayTime = 0
+	loadError = false;
 	
 	images.css({
 			visibility : 'visible',
@@ -35,47 +38,50 @@ $.fn.preloader = function(options) {
 		});
 	
 	var timer = setInterval(function() {
-			init() 
+			init();
 		}, options.interval);
 	
 	init = function() {
-		images = images.filter(function(e) {
-				noError = 1;
-				if(this.complete && this.naturalWidth !== 0) {
+		images = images.filter(function() {
+		
+				this.onerror = function() {
+					loadError = true;
+				};				
+				
+				if(loadError == 1) {
+				
+					$(this).css({ visibility : 'visible',	opacity : 1 });
+					
+					if($(this).parent().hasClass('unwrap')) 
+						$(this).unwrap();
+					else 
+						$(this).parent().attr('style', '');
+						
+					options.onLoadError($(this));
+					
+					return null;					
+				} else if(this.complete && this.naturalWidth !== 0) {				
+				
 					delayTime = delayTime + options.delay;
-					$(this).css({
-							visibility : 'visible'
-						}).delay(delayTime).animate({
-							opacity : 1
-						}, options.fadeIn, function() {
+					$(this).css({ visibility : 'visible' })
+						.delay(delayTime).animate({ opacity : 1 }, options.fadeIn, function() {
+						
 							if($(this).parent().hasClass('unwrap')) 
 								$(this).unwrap();
 							else 
 								$(this).parent().attr('style', '');
+								
 							options.onEachLoad($(this));
 						});
-				} else {
-					this.onerror = function() {
-						$(this).css({
-								visibility : 'visible',
-								opacity : 1
-							});
-						if($(this).parent().hasClass('unwrap')) 
-							$(this).unwrap();
-						else 
-							$(this).parent().attr('style', '');
-						options.onLoadError($(this));
-						noError = 0;
-					}
-					if(noError) 
-						return this;
-				}
+				} else
+					return this;
 			}
 		);
+		
 		if(images.length == 0) {
 			clearInterval(timer);
 			options.onDone();
-		}
+		}		
 	};
 }
  

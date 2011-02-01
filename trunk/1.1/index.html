@@ -7,9 +7,17 @@
 	<script src="js/jquery.preloader.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function() {
-			$('#gallery').preloader({onLoadError: function(e) {
-				e.replaceWith($('<p>This image wan not loaded succesfully!</p>'));
-			}});
+				$('#gallery').preloader({
+				onEachLoad: function(e) {
+					console.log(e.attr('src')+(' was loaded succesfully!'));
+				},
+				onLoadError: function(e) {
+					console.log(e.attr('src')+(' was not loaded succesfully!'));
+				},
+				onDone: function() {
+					console.log('Done');
+				}			
+			});
 		}); 
  </script>	
 	<link rel="stylesheet" href="css/screen.css" type="text/css" media="screen, projection">			
